@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header class="app-header">
+            <div class="brand-row">
+                <div class="app-logo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="7" width="18" height="12" rx="2" />
+                        <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        <path d="M3 11h18" />
+                    </svg>
+                </div>
+                <div class="brand-copy">
+                    <h1>Payroll System</h1>
+                    <p class="brand-subtext">Enterprise Edition</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="user-badge">
+                    <div class="user-avatar">AU</div>
+                    <div class="user-copy">
+                        <p class="user-name">Admin User</p>
+                        <p class="user-role">HR Department</p>
+                    </div>
+                </div>
+                <button class="btn-add-employee" id="addEmployeeBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="icon-btn">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Add Employee
+                </button>
+            </div>
+        </header>
+
+        <div id="alertContainer"></div>
+
+        <!-- MAIN SIDE-BY-SIDE LAYOUT -->
+        <div class="main-panel">
+
+            <!-- LEFT: Employee List -->
+            <section class="card roster-card">
+                <div class="roster-header">
+                    <div class="roster-title-row">
+                        <h2>Employee List</h2>
+                        <span class="badge" id="employeeCountBadge">0</span>
+                    </div>
+                    <div class="search-panel">
+                        <span class="search-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="11" cy="11" r="7" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                        </span>
+                        <input type="search" class="search-input" placeholder="Search employees..." id="employeeSearch">
+                    </div>
+                </div>
+                <div id="employeeTableContainer">
+                    <div class="loading">
+                        <span class="spinner"></span>Loading employees...
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT: Payroll Computation -->
+            <section class="card payroll-card">
+                <div class="selected-panel" id="selectedPanel">
+                    <div class="selected-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                        </svg>
+                    </div>
+                    <div class="selected-copy">
+                        <p class="summary-label">Selected Employee</p>
+                        <h2 class="summary-name" id="selectedName">No employee selected</h2>
+                        <p class="summary-meta" id="selectedMeta">Choose an employee from the roster to compute payroll</p>
+                    </div>
+                </div>
+
+                <div class="payroll-body">
+                    <div class="section-row">
+                        <div class="payroll-section">
+                            <p class="section-title"><span class="section-dot dot-blue"></span> Attendance</p>
+                            <div class="form-row">
+                                <label>Days Present
+                                    <input type="number" min="0" value="0" disabled id="daysWorked">
+                                </label>
+                                <label>Overtime (hrs)
+                                    <input type="number" min="0" value="0" disabled id="overtimeHours">
+                                </label>
+                            </div>
+                            <div class="form-row">
+                                <label>Late / Undertime (min)
+                                    <input type="number" min="0" value="0" disabled id="lateUndertime">
+                                </label>
+                                <label>Night Diff (hrs)
+                                    <input type="number" min="0" value="0" disabled id="nightDiff">
+                                </label>
+                            </div>
+                            <div class="form-row">
+                                <label>Cutoff Start
+                                    <input type="date" value="" disabled id="cutoffStart" data-default="">
+                                </label>
+                                <label>Cutoff End
+                                    <input type="date" value="" disabled id="cutoffEnd" data-default="">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="payroll-section">
+                            <p class="section-title"><span class="section-dot dot-red"></span> Deductions</p>
+                            <div class="form-row">
+                                <label>Loans / Cash Adv
+                                    <input type="number" min="0" value="0" disabled id="loansCashAdvance">
+                                </label>
+                                <label>SSS
+                                    <input type="number" min="0" value="0" disabled id="sssDeduction">
+                                </label>
+                            </div>
+                            <div class="form-row">
+                                <label>PhilHealth
+                                    <input type="number" min="0" value="0" disabled id="philhealthDeduction">
+                                </label>
+                                <label>Pag-IBIG
+                                    <input type="number" min="0" value="0" disabled id="pagibigDeduction">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-row">
+                        <div class="payroll-section">
+                            <p class="section-title"><span class="section-dot dot-green"></span> Additional Earnings</p>
+                            <div class="form-row">
+                                <label>Allowance
+                                    <input type="number" min="0" value="0" disabled id="allowance">
+                                </label>
+                                <label>Incentives
+                                    <input type="number" min="0" value="0" disabled id="incentives">
+                                </label>
+                            </div>
+                            <div class="form-row">
+                                <label>Holiday Regular
+                                    <input type="number" min="0" value="0" disabled id="holidayRegular">
+                                </label>
+                                <label>Holiday Special
+                                    <input type="number" min="0" value="0" disabled id="holidaySpecial">
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="payroll-section">
+                            <p class="section-title"><span class="section-dot dot-amber"></span> Other</p>
+                            <div class="form-row">
+                                <label>Leave Days
+                                    <input type="number" min="0" value="0" disabled id="leavePay">
+                                </label>
+                                <label>Other Earnings
+                                    <input type="number" min="0" value="0" disabled id="otherEarnings">
+                                </label>
+                            </div>
+                            <div class="form-row">
+                                <label>Other Deductions
+                                    <input type="number" min="0" value="0" disabled id="otherDeductions">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="payroll-action-row">
+                        <button class="btn-submit payroll-submit" type="button" onclick="handlePayrollGeneration()">
+                            Generate Payroll
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Payroll History -->
+        <section class="card history-card">
+            <div class="card-header">
+                <div>
+                    <h2>Payroll History</h2>
+                </div>
+                <div class="history-actions">
+                    <button class="btn-small btn-export" onclick="exportHistoryAsCSV()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="icon-btn">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        Export
+                    </button>
+                    <button class="btn-small btn-clear" onclick="clearPayrollHistory()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="icon-btn">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                            <path d="M10 11v6" />
+                            <path d="M14 11v6" />
+                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                        </svg>
+                        Clear
+                    </button>
+                </div>
+            </div>
+            <div class="history-table-wrapper">
+                <table class="payroll-history-table">
+                    <thead>
+                        <tr>
+                            <th class="header-employee">Employee</th>
+                            <th class="header-date">Cutoff Start</th>
+                            <th class="header-date">Cutoff End</th>
+                            <th class="header-basic-salary">Basic Salary</th>
+                            <th class="header-additions">Additions</th>
+                            <th class="header-deductions">Deductions</th>
+                            <th class="header-gross-pay">Gross Pay</th>
+                            <th class="header-net-pay">Net Pay</th>
+                            <th class="header-actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payrollHistoryBody">
+                        <tr>
+                            <td colspan="9" class="empty-history">No payroll history yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal for Adding/Editing Employee -->
+    <div class="modal" id="employeeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Employee</h2>
+                <button class="modal-close" id="modalCloseBtn" aria-label="Close modal">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+            <form id="employeeForm">
+                <div class="modal-body">
+                    <input type="hidden" id="employeeId" name="id">
+                    <div class="form-group">
+                        <label for="employeeName">Employee Name</label>
+                        <input type="text" id="employeeName" name="name" placeholder="Full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="employeeRole">Role</label>
+                        <input type="text" id="employeeRole" name="role" placeholder="e.g. Agent, IT" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="salaryType">Salary Type</label>
+                        <select id="salaryType" name="salaryType" required>
+                            <option value="">Select salary type</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="daily">Daily</option>
+                            <option value="hourly">Hourly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="baseRate">Base Rate (₱)</label>
+                        <input type="number" id="baseRate" name="baseRate" placeholder="Enter amount" step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" id="modalCancelBtn">Cancel</button>
+                    <button type="submit" class="btn-submit" id="submitBtn">Add Employee</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Payslip Preview -->
+    <div class="modal" id="payslipPreviewModal">
+        <div class="modal-content payslip-modal-content">
+            <div class="modal-header">
+                <h2>Payslip Preview</h2>
+                <button class="modal-close" id="payslipModalCloseBtn" aria-label="Close payslip preview">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body payslip-modal-body">
+                <div id="payslipPreviewContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" id="closePayslipPreviewBtn">Close</button>
+                <button type="button" class="btn-submit" id="downloadPayslipPngBtn">Download PNG</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
